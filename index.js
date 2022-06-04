@@ -9,30 +9,36 @@ var urls = [""];
     const browser = await puppeteer.launch({ headless: false })
     const page = await browser.newPage()
     await page.goto("https://www.youtube.com/results?search_query=nutricon+colon+cancer")
-    const videos = await page.$$('#thumbnail');
-    
-    autoScroll(page)
-    
-    await page.evaluate(_ => {
-        window.scrollBy(0, window.innerHeight);
-    });
-    console.log(videos.length);
-    while(counter <= 40)
-    {
-        counter ++;
-    }
-    // console.log(videos.length);
-    // await page.waitForTimeout(50000);
+    var videos = await page.$$('#thumbnail');
+console.log(videos.length);
+    var videoList = [];
 
-    for (let video of videos) {
+    while (videoList.length <= 400) {
+
+        await page.evaluate(_ => {
+            window.scrollBy(0, window.innerHeight);
+        });
+        await page.waitForTimeout(900);
+
+        videos = await page.$$('#thumbnail')
+        for (var video of videos) {
+            var cntr = await (await video.getProperty('href')).jsonValue();
+            if (cntr !== undefined && cntr !== '' && cntr !== ' ') {
+                videoList.push(video);
+                console.log(videoList.length);
+            }
+        }
+    }
+
+    for (let video of videoList) {
         try {
+
             console.log(await (await video.getProperty('href')).jsonValue());
             urls += "\n" + await (await video.getProperty('href')).jsonValue();
         } catch (error) {
             console.log(error)
         }
     }
-
     await page.waitForTimeout(100)
 
     const data = new Uint8Array(Buffer.from(urls))
@@ -40,22 +46,3 @@ var urls = [""];
     await page.screenshot("image.png");
     await browser.close()
 })();
-
-async function autoScroll(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve, reject) => {
-            var totalHeight = 0;
-            var distance = 100;
-            var timer = setInterval(() => {
-                var scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-
-                if (totalHeight >= scrollHeight - window.innerHeight) {
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 100);
-        });
-    });
-}
