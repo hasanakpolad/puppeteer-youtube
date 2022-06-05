@@ -8,12 +8,12 @@ var urls = [""];
 (async () => {
     const browser = await puppeteer.launch({ headless: false })
     const page = await browser.newPage()
-    await page.goto("https://www.youtube.com/results?search_query=nutricon+colon+cancer")
+    await page.goto("https://www.youtube.com/results?search_query=Nutricion+in+colorectal+cancer+treatment")
     var videos = await page.$$('#thumbnail');
 console.log(videos.length);
     var videoList = [];
 
-    while (videoList.length <= 400) {
+    while (videoList.length <= 200) {
 
         await page.evaluate(_ => {
             window.scrollBy(0, window.innerHeight);
@@ -42,7 +42,7 @@ console.log(videos.length);
     await page.waitForTimeout(100)
 
     const data = new Uint8Array(Buffer.from(urls))
-    fs.writeFile('url.txt', data, (err) => { if (err) throw err; })
+    fs.writeFile('Nutricionincolorectalcansertreatment.txt', data, (err) => { if (err) throw err; })
     await page.screenshot("image.png");
     await browser.close()
 })();
